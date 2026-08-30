@@ -43,7 +43,7 @@ export const services: Service[] = [
         description: "Classic pedicure with regular nail polish.",
         category: "pedicure",
         durationMinutes: 30,
-        priceCents: 40000,
+        priceCents: 4000,
         requiresReview: false,
         acceptsImageUpload: false,
         isActive: true,
