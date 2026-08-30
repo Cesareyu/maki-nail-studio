@@ -1,6 +1,7 @@
 import { ServiceBundleCard } from "@/components/service-bundle-card";
 import { ServiceCard } from "@/components/service-card";
 import { serviceBundles, services } from "@/data/services";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -19,9 +20,13 @@ export default function Home() {
           one-to-one studio experience.
         </p>
 
-        <button className="mt-10 rounded-full bg-[#2d2523] px-8 py-4 text-sm font-medium text-white">
+        <Link
+          href="/services"
+          className="mt-10 rounded-full bg-[#2d2523] px-8 py-4 text-sm font-medium text-white"
+        >
           Book an Appointment
-        </button>
+        </Link>
+        
       </section>
       <section className="px-6 py-28">
           <div className="mx-auto max-w-6x1">
