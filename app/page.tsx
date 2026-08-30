@@ -1,5 +1,6 @@
+import { ServiceBundleCard } from "@/components/service-bundle-card";
+import { ServiceCard } from "@/components/service-card";
 import { serviceBundles, services } from "@/data/services";
-import { calculateBundleSavings } from "@/lib/pricing";
 
 export default function Home() {
   return (
@@ -36,33 +37,12 @@ export default function Home() {
 
             <div className="grid gap-6 md:grid-cols-2 lg: grid-cols-3">
               {services.map((service) => (
-                <article
-                  key={service.id}
-                  className="rounded-3xl border border-[#eadfdc] bg-white p-6 shawdow-sm"
-                >
-                  <p className="text-xs uppercase tracking -[0,2em] text-[#9d6f65]">
-                    {service.category}
-                  </p>
-
-                  <h3 className="mt-2 text-xl font-semibold">
-                    {service.name}
-                  </h3>
-
-                  <p className="mt-3 leading-7 text-[#6f625e]">
-                    {service.description}
-                  </p>
-                  
-                  <div className="mt-6 flex items-center justify-between border-t border-[#www4el] pt-4">
-                    <span className="text-sm text-[#6f625e]">
-                      {service.durationMinutes} minutes
-                    </span>
-
-                    <span className="font-semibold">
-                      ${(service.priceCents / 100).toFixed(2)}
-                    </span>
-                  </div>
-                </article>
-              ))}
+                <ServiceCard
+                   key={service.id}
+                   service={service}
+                   />
+          ))}
+      
 
             </div>
           </div>
@@ -82,31 +62,13 @@ export default function Home() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {serviceBundles.map((bundle) => (
-              <article
+               <ServiceBundleCard
                 key={bundle.id}
-                className="flex h-full flex-col rounded-3xl border border-[#eadfdc] bg-[#fffaf8] p-6"
-              >
-                <h3 className="text-xl font-semibold">{bundle.name}</h3>
-
-                <p className="mt-3 leading-7 text-[#6f625e]">
-                  {bundle.description}
-                </p>
-                <p className="mb-6 mt-4 inline-flex w-fit rounded-full bg-[#f4e7e3] px-3 py-1 text-sm font-medium text-[#8b574d]">
-                  Save $
-                  {(calculateBundleSavings(bundle, services) / 100).toFixed(2)}
-                </p>
-
-                <div className="mt-auto flex items-center justify-between border-t border-[#eee4e1] pt-4">
-                  <span className="text-sm text-[#6f625e]">
-                    {bundle.durationMinutes} minutes
-                  </span>
-
-                  <span className="font-semibold">
-                    ${(bundle.priceCents / 100).toFixed(2)}
-                  </span>
-                </div>
-              </article>
+                bundle={bundle}
+                services={services}
+              />
             ))}
+        
           </div>
 
           <p className="mt-8 text-center text-sm text-[#6f625e]">
