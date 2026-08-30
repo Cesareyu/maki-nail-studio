@@ -1,4 +1,4 @@
-import { services } from "@/data/services";
+import { serviceBundles, services } from "@/data/services";
 
 export default function Home() {
   return (
@@ -65,6 +65,49 @@ export default function Home() {
 
             </div>
           </div>
+      </section>
+
+      <section className="bg-white px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <p className="text-sm uppercase tracking-[0.3em] text-[#9d6f65]">
+              Combo Services
+            </p>
+
+            <h2 className="mt-4 text-3xl font-semibold md:text-4xl">
+              Complete care, better value
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {serviceBundles.map((bundle) => (
+              <article
+                key={bundle.id}
+                className="rounded-3xl border border-[#eadfdc] bg-[#fffaf8] p-6"
+              >
+                <h3 className="text-xl font-semibold">{bundle.name}</h3>
+
+                <p className="mt-3 leading-7 text-[#6f625e]">
+                  {bundle.description}
+                </p>
+
+                <div className="mt-6 flex items-center justify-between border-t border-[#eee4e1] pt-4">
+                  <span className="text-sm text-[#6f625e]">
+                    {bundle.durationMinutes} minutes
+                  </span>
+
+                  <span className="font-semibold">
+                    ${(bundle.priceCents / 100).toFixed(2)}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <p className="mt-8 text-center text-sm text-[#6f625e]">
+            Prices shown are before applicable taxes.
+          </p>
+        </div>
       </section>
 
     </main>

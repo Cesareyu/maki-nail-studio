@@ -98,7 +98,7 @@ export const services: Service[] = [
 export const serviceBundles: ServiceBundle[] = [
     {id:"regular-mani-pedi",
         name: "Spa Manicure & Pedicure Combo",
-        description: "Classic manicure and pedicure with regular nail polish,",
+        description: "Classic manicure and pedicure with regular nail polish.",
         serviceIds: ["spa-manicure", "spa-pedicure"],
         durationMinutes: 60, 
         priceCents: 5500, 
