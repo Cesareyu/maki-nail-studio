@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 
-import type { Service } from "@/data/services";
+import type {
+  Service,
+  ServiceBundle,
+} from "@/data/services";
+import { findMatchingBundle } from "@/lib/pricing";
 
 type ServiceSelectionProps = {
   services: Service[];
+  bundles: ServiceBundle[];
 };
 
 type BookingGuestDraft = {
@@ -28,6 +33,7 @@ function getServiceSelectionGroup(
 
 export function ServiceSelection({
   services,
+  bundles,
 }: ServiceSelectionProps) {
   const [guests, setGuests] = useState<
     BookingGuestDraft[]
@@ -75,6 +81,82 @@ export function ServiceSelection({
       0,
     );
 
+  const activeGuestBundle = findMatchingBundle(
+    selectedServiceIds,
+    bundles,
+  );
+
+  const activeGuestFinalPriceCents =
+    activeGuestBundle?.priceCents ??
+    activeGuestSubtotalCents;
+
+  const activeGuestFinalDurationMinutes =
+    activeGuestBundle?.durationMinutes ??
+    activeGuestDurationMinutes;
+
+  const activeGuestSavingsCents =
+    activeGuestSubtotalCents -
+    activeGuestFinalPriceCents;
+  
+  const guestBookingSummaries = guests
+    .map((guest, index) => {
+      const guestServices = services.filter(
+        (service) =>
+          guest.selectedServiceIds.includes(
+            service.id,
+          ),
+      );
+
+      const guestSubtotalCents =
+        guestServices.reduce(
+          (total, service) =>
+            total + service.priceCents,
+          0,
+        );
+
+      const guestDurationMinutes =
+        guestServices.reduce(
+          (total, service) =>
+            total + service.durationMinutes,
+          0,
+        );
+
+      const guestBundle = findMatchingBundle(
+        guest.selectedServiceIds,
+        bundles,
+      );
+
+      return {
+        guestId: guest.id,
+        guestNumber:index + 1,
+        serviceCount: guestServices.length,
+        finalPriceCents:
+          guestBundle?.priceCents ??
+          guestSubtotalCents,
+        finalDurationMinutes:
+          guestBundle?.durationMinutes ??
+          guestDurationMinutes,
+      };
+    })
+    .filter(
+      (summary) => summary.serviceCount > 0,
+    );
+
+  const bookingTotalPriceCents = 
+  guestBookingSummaries.reduce(
+    (total, guest) =>
+      total + guest.finalPriceCents,
+    0,
+  );
+
+  const bookingTotalDurationMinutes =
+  guestBookingSummaries.reduce(
+    (total, guest) =>
+      total + guest.finalDurationMinutes,
+    0,
+  );
+  
+
   function addGuest() {
     const newGuestId = crypto.randomUUID();
 
@@ -114,7 +196,9 @@ export function ServiceSelection({
           remainingGuests.length - 1
         ];
 
-      setActiveGuestId(previousGuest.id);
+      if (previousGuest) {
+        setActiveGuestId(previousGuest.id);
+      }
     }
   }
 
@@ -165,10 +249,14 @@ export function ServiceSelection({
                 return false;
               }
 
-              return (
+              const previousServiceGroup =
                 getServiceSelectionGroup(
                   previousService,
-                ) !== selectedServiceGroup
+                );
+
+              return (
+                previousServiceGroup !==
+                selectedServiceGroup
               );
             },
           );
@@ -277,7 +365,10 @@ export function ServiceSelection({
       <p className="mb-4 text-sm text-[#6f625e]">
         Select services for{" "}
         <span className="font-semibold text-[#2d2523]">
-          Guest {activeGuestIndex + 1}
+          Guest{" "}
+          {activeGuestIndex >= 0
+            ? activeGuestIndex + 1
+            : 1}
         </span>
       </p>
 
@@ -354,21 +445,123 @@ export function ServiceSelection({
             )}
           </div>
 
+          {activeGuestBundle && (
+            <div className="mt-5 rounded-2xl bg-[#f4e7e3] p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-[#2d2523]">
+                    Combo applied
+                  </p>
+
+                  <p className="mt-1 text-sm text-[#6f625e]">
+                    {activeGuestBundle.name}
+                  </p>
+                </div>
+
+                <span className="whitespace-nowrap text-sm font-semibold text-[#8b574d]">
+                  Save $
+                  {(
+                    activeGuestSavingsCents /
+                    100
+                  ).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="mt-5 flex items-center justify-between border-t border-[#eadfdc] pt-4">
             <span className="text-sm text-[#6f625e]">
-              {activeGuestDurationMinutes}{" "}
+              {activeGuestFinalDurationMinutes}{" "}
               minutes
             </span>
 
             <span className="font-semibold text-[#2d2523]">
               $
               {(
-                activeGuestSubtotalCents / 100
+                activeGuestFinalPriceCents / 100
               ).toFixed(2)}
             </span>
           </div>
         </section>
       )}
+
+     {guests.length > 1 &&
+  guestBookingSummaries.length > 0 && (
+    <section className="mt-8 rounded-3xl bg-[#2d2523] p-5 text-white">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">
+            Group booking summary
+          </h2>
+
+          <p className="mt-1 text-sm text-white/70">
+            Taylor will serve each guest in order.
+          </p>
+        </div>
+
+        <span className="whitespace-nowrap text-sm text-white/70">
+          {guestBookingSummaries.length} of{" "}
+          {guests.length} guests selected
+        </span>
+      </div>
+
+      <div className="mt-5 space-y-3 border-t border-white/20 pt-5">
+        {guestBookingSummaries.map(
+          (summary) => (
+            <div
+              key={summary.guestId}
+              className="flex items-center justify-between gap-4 text-sm"
+            >
+              <div>
+                <p className="font-medium">
+                  Guest {summary.guestNumber}
+                </p>
+
+                <p className="mt-1 text-white/60">
+                  {summary.serviceCount}{" "}
+                  {summary.serviceCount === 1
+                    ? "service"
+                    : "services"}
+                  {" · "}
+                  {
+                    summary.finalDurationMinutes
+                  }{" "}
+                  minutes
+                </p>
+              </div>
+
+              <span className="font-semibold">
+                $
+                {(
+                  summary.finalPriceCents /
+                  100
+                ).toFixed(2)}
+              </span>
+            </div>
+          ),
+        )}
+      </div>
+
+      <div className="mt-5 flex items-center justify-between border-t border-white/20 pt-5">
+        <div>
+          <p className="font-semibold">
+            Estimated total
+          </p>
+
+          <p className="mt-1 text-sm text-white/60">
+            {bookingTotalDurationMinutes} minutes
+          </p>
+        </div>
+
+        <span className="text-xl font-semibold">
+          $
+          {(
+            bookingTotalPriceCents / 100
+          ).toFixed(2)}
+        </span>
+      </div>
+    </section>
+  )}
     </div>
   );
 }
