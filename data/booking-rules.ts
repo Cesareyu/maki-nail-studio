@@ -18,6 +18,11 @@ export type WeeklyBookingHours = Record<
   DailyBookingHours
 >;
 
+export type BookingStartWindow = {
+  firstStartTime: string;
+  lastStartTime: string;
+};
+
 export const bookingRules = {
   timeZone: "America/Toronto",
   slotIntervalMinutes: 15,

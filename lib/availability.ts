@@ -2,7 +2,10 @@ import {
   bookingRules,
   weeklyBookingHours,
 } from "@/data/booking-rules";
-import type { Weekday } from "@/data/booking-rules";
+import type {
+  BookingStartWindow,
+  Weekday,
+} from "@/data/booking-rules";
 
 export function timeStringToMinutes(
   time: string,
@@ -184,5 +187,33 @@ export function filterAvailableStartTimes(
 
       return !conflictsWithUnavailableTime;
     },
+  );
+}
+
+export function getStartTimesWithManualOpenings(
+  weekday: Weekday,
+  manualOpenings: BookingStartWindow[],
+): string[] {
+  const defaultStartTimes =
+    getDefaultStartTimesForWeekday(weekday);
+
+  const manuallyOpenedStartTimes =
+    manualOpenings.flatMap((opening) =>
+      generateCandidateStartTimes(
+        opening.firstStartTime,
+        opening.lastStartTime,
+        bookingRules.slotIntervalMinutes,
+      ),
+    );
+
+  return [
+    ...new Set([
+      ...defaultStartTimes,
+      ...manuallyOpenedStartTimes,
+    ]),
+  ].sort(
+    (first, second) =>
+      timeStringToMinutes(first) -
+      timeStringToMinutes(second),
   );
 }

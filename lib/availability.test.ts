@@ -5,6 +5,7 @@ import {
   filterAvailableStartTimes,
   generateCandidateStartTimes,
   getDefaultStartTimesForWeekday,
+  getStartTimesWithManualOpenings,
   timeStringToMinutes,
 } from "@/lib/availability";
 
@@ -284,5 +285,72 @@ describe("filterAvailableStartTimes", () => {
     ).toThrow(
       "Booking duration must be a positive integer",
     );
+  });
+});
+
+describe("getStartTimesWithManualOpenings", () => {
+  it("opens selected times on a normally closed Monday", () => {
+    const startTimes =
+      getStartTimesWithManualOpenings(
+        "monday",
+        [
+          {
+            firstStartTime: "13:00",
+            lastStartTime: "14:00",
+          },
+        ],
+      );
+
+    expect(startTimes).toEqual([
+      "13:00",
+      "13:15",
+      "13:30",
+      "13:45",
+      "14:00",
+    ]);
+  });
+
+  it("extends the schedule after the normal last start time", () => {
+    const startTimes =
+      getStartTimesWithManualOpenings(
+        "tuesday",
+        [
+          {
+            firstStartTime: "18:00",
+            lastStartTime: "19:00",
+          },
+        ],
+      );
+
+    expect(startTimes).toHaveLength(37);
+    expect(startTimes[0]).toBe("10:00");
+    expect(startTimes.at(-1)).toBe("19:00");
+  });
+
+  it("removes duplicate times from overlapping manual openings", () => {
+    const startTimes =
+      getStartTimesWithManualOpenings(
+        "saturday",
+        [
+          {
+            firstStartTime: "13:00",
+            lastStartTime: "14:00",
+          },
+          {
+            firstStartTime: "13:30",
+            lastStartTime: "14:30",
+          },
+        ],
+      );
+
+    expect(startTimes).toEqual([
+      "13:00",
+      "13:15",
+      "13:30",
+      "13:45",
+      "14:00",
+      "14:15",
+      "14:30",
+    ]);
   });
 });
