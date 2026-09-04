@@ -163,3 +163,20 @@ export function getWeekdayFromIsoDate(
 
   return weekday;
 }
+
+export function addDaysToIsoDate(
+  isoDate: string,
+  days: number,
+): string {
+  if (!Number.isInteger(days)) {
+    throw new Error("Days must be an integer");
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+  const targetDayNumber = isoDateToDayNumber(isoDate) + days;
+  const targetDate = new Date(
+    targetDayNumber * millisecondsPerDay,
+  );
+
+  return targetDate.toISOString().slice(0, 10);
+}

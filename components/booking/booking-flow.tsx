@@ -1,10 +1,18 @@
 "use client";
 
+import { calculateAvailableStartTimes } from "@/lib/availability";
+import { calculateGuestBookingSummary } from "@/lib/booking-summary";
 import { useState } from "react";
-
+import { DateTimeSelection } from "@/components/booking/date-time-selection";
 import { ServiceSelection } from "@/components/booking/service-selection";
 import type { Service, ServiceBundle } from "@/data/services";
 import type { BookingGuestDraft } from "@/types/booking";
+
+import { bookingRules } from "@/data/booking-rules";
+import {
+  addDaysToIsoDate,
+  getLocalDateTimeParts,
+} from "@/lib/booking-dates";
 
 type BookingFlowProps = {
   services: Service[];
@@ -28,34 +36,63 @@ export function BookingFlow({
   const [activeStep, setActiveStep] = useState<
     "services" | "date-time"
     >("services");
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    null,
+    );
+    const [selectedStartTime, setSelectedStartTime] =
+    useState<string | null>(null);
 
   const canContinue = guests.every(
     (guest) => guest.selectedServiceIds.length > 0,
     );
+    const bookingDurationMinutes = guests.reduce(
+    (totalMinutes, guest) => {
+    const summary = calculateGuestBookingSummary(
+      guest.selectedServiceIds,
+      services,
+      bundles,
+    );
 
-    if (activeStep === "date-time") {
+    return totalMinutes + summary.finalDurationMinutes;
+  },
+  0,
+);
+
+  const todayInBookingTimeZone = getLocalDateTimeParts(
+    new Date(),
+    bookingRules.timeZone,
+    ).date;
+
+  const latestBookingDate = addDaysToIsoDate(
+    todayInBookingTimeZone,
+    bookingRules.maximumAdvanceDays,
+    );
+    const availableStartTimes = selectedDate
+  ? calculateAvailableStartTimes({
+      selectedDate,
+      bookingDurationMinutes,
+      currentInstant: new Date(),
+      manualOpenings: [],
+      unavailableIntervals: [],
+    })
+  : [];
+  function handleDateChange(date: string) {
+  setSelectedDate(date);
+  setSelectedStartTime(null);
+}
+
+if (activeStep === "date-time") {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <p className="text-sm uppercase tracking-[0.2em] text-[#8b574d]">
-        Book an appointment
-      </p>
-
-      <h1 className="mt-3 text-4xl font-semibold text-[#2d2523]">
-        Choose a date and time
-      </h1>
-
-      <p className="mt-3 text-[#6f6561]">
-        Your service selections have been saved.
-      </p>
-
-      <button
-        type="button"
-        onClick={() => setActiveStep("services")}
-        className="mt-8 rounded-full border border-[#2d2523] px-6 py-3 font-semibold text-[#2d2523]"
-      >
-        Back to services
-      </button>
-    </section>
+    <DateTimeSelection
+    selectedDate={selectedDate}
+    selectedStartTime={selectedStartTime}
+    minimumDate={todayInBookingTimeZone}
+    maximumDate={latestBookingDate}
+    availableStartTimes={availableStartTimes}
+    onDateChange={handleDateChange}
+    onTimeChange={setSelectedStartTime}
+    onBack={() => setActiveStep("services")}
+    />
   );
 }
 return (

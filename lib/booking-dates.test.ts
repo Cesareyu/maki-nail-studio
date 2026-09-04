@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { bookingRules } from "@/data/booking-rules";
 
 import {
+  addDaysToIsoDate,
   getLocalDateTimeParts,
   getWeekdayFromIsoDate,
   isDateWithinBookingWindow,
@@ -148,4 +149,30 @@ describe("getWeekdayFromIsoDate", () => {
       ).toBe(expectedWeekday);
     },
   );
+});
+
+describe("addDaysToIsoDate", () => {
+  it("adds days across a month boundary", () => {
+    expect(addDaysToIsoDate("2026-09-04", 90)).toBe(
+      "2026-12-03",
+    );
+  });
+
+  it("adds days across a year boundary", () => {
+    expect(addDaysToIsoDate("2026-12-31", 1)).toBe(
+      "2027-01-01",
+    );
+  });
+
+  it("supports subtracting days", () => {
+    expect(addDaysToIsoDate("2026-01-01", -1)).toBe(
+      "2025-12-31",
+    );
+  });
+
+  it("rejects a non-integer number of days", () => {
+    expect(() =>
+      addDaysToIsoDate("2026-09-04", 1.5),
+    ).toThrow("Days must be an integer");
+  });
 });
