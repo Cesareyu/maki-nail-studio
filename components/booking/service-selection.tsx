@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { calculateGuestBookingSummary } from "@/lib/booking-summary";
 
+import type { BookingGuestDraft } from "@/types/booking";
+
 import type {
   Service,
   ServiceBundle,
@@ -12,14 +14,6 @@ import type {
 type ServiceSelectionProps = {
   services: Service[];
   bundles: ServiceBundle[];
-};
-
-type BookingGuestDraft = {
-  id: string;
-  name: string;
-  phone: string;
-  selectedServiceIds: string[];
-  technicianId: string | null;
 };
 
 function getServiceSelectionGroup(
