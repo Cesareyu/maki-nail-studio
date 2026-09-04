@@ -1,3 +1,5 @@
+import type { Weekday } from "@/data/booking-rules";
+
 const MILLISECONDS_PER_DAY =
   24 * 60 * 60 * 1000;
 
@@ -130,3 +132,34 @@ export function getLocalDateTimeParts(
   };
 }
 
+const weekdays: Weekday[] = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+export function getWeekdayFromIsoDate(
+  isoDate: string,
+): Weekday {
+  const dayNumber =
+    isoDateToDayNumber(isoDate);
+
+  const date = new Date(
+    dayNumber * MILLISECONDS_PER_DAY,
+  );
+
+  const weekday =
+    weekdays[date.getUTCDay()];
+
+  if (!weekday) {
+    throw new Error(
+      `Unable to determine weekday: ${isoDate}`,
+    );
+  }
+
+  return weekday;
+}

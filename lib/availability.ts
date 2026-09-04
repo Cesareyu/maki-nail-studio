@@ -10,7 +10,9 @@ import type {
 
 import {
   getLocalDateTimeParts,
+  getWeekdayFromIsoDate,
   isoDateToDayNumber,
+  isDateWithinBookingWindow,
 } from "@/lib/booking-dates";
 
 export function timeStringToMinutes(
@@ -271,5 +273,62 @@ export function filterStartTimesByLeadTime(
         minimumLeadTimeMinutes
       );
     },
+  );
+}
+
+export type CalculateAvailableStartTimesInput = {
+  selectedDate: string;
+  bookingDurationMinutes: number;
+  currentInstant: Date;
+  manualOpenings: BookingStartWindow[];
+  unavailableIntervals: TimeInterval[];
+};
+
+export function calculateAvailableStartTimes({
+  selectedDate,
+  bookingDurationMinutes,
+  currentInstant,
+  manualOpenings,
+  unavailableIntervals,
+}: CalculateAvailableStartTimesInput): string[] {
+  const localNow = getLocalDateTimeParts(
+    currentInstant,
+    bookingRules.timeZone,
+  );
+
+  const isWithinBookingWindow =
+    isDateWithinBookingWindow(
+      selectedDate,
+      localNow.date,
+      bookingRules.maximumAdvanceDays,
+    );
+
+  if (!isWithinBookingWindow) {
+    return [];
+  }
+
+  const weekday =
+    getWeekdayFromIsoDate(selectedDate);
+
+  const candidateStartTimes =
+    getStartTimesWithManualOpenings(
+      weekday,
+      manualOpenings,
+    );
+
+  const startTimesAfterLeadTime =
+    filterStartTimesByLeadTime(
+      selectedDate,
+      candidateStartTimes,
+      currentInstant,
+      bookingRules.timeZone,
+      bookingRules.minimumLeadTimeMinutes,
+    );
+
+  return filterAvailableStartTimes(
+    startTimesAfterLeadTime,
+    bookingDurationMinutes,
+    unavailableIntervals,
+    bookingRules.bufferMinutes,
   );
 }

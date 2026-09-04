@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  calculateAvailableStartTimes,
   doTimeIntervalsOverlap,
   filterAvailableStartTimes,
   filterStartTimesByLeadTime,
@@ -424,5 +425,118 @@ describe("filterStartTimesByLeadTime", () => {
     ).toThrow(
       "Minimum lead time must be a non-negative integer",
     );
+  });
+});
+
+describe("calculateAvailableStartTimes", () => {
+  it("returns the full default schedule for a future open day", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-09-08",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-04T14:00:00Z",
+        ),
+        manualOpenings: [],
+        unavailableIntervals: [],
+      });
+
+    expect(startTimes).toHaveLength(33);
+    expect(startTimes[0]).toBe("10:00");
+    expect(startTimes.at(-1)).toBe("18:00");
+  });
+
+  it("returns no times for a closed Monday without manual openings", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-09-07",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-04T14:00:00Z",
+        ),
+        manualOpenings: [],
+        unavailableIntervals: [],
+      });
+
+    expect(startTimes).toEqual([]);
+  });
+
+  it("returns manually opened times on a closed Monday", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-09-07",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-04T14:00:00Z",
+        ),
+        manualOpenings: [
+          {
+            firstStartTime: "13:00",
+            lastStartTime: "14:00",
+          },
+        ],
+        unavailableIntervals: [],
+      });
+
+    expect(startTimes).toEqual([
+      "13:00",
+      "13:15",
+      "13:30",
+      "13:45",
+      "14:00",
+    ]);
+  });
+
+  it("applies lead time on the selected current day", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-09-08",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-08T14:00:00Z",
+        ),
+        manualOpenings: [],
+        unavailableIntervals: [],
+      });
+
+    expect(startTimes[0]).toBe("12:00");
+    expect(startTimes).not.toContain("11:45");
+  });
+
+  it("removes times that conflict with an unavailable interval", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-09-08",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-04T14:00:00Z",
+        ),
+        manualOpenings: [],
+        unavailableIntervals: [
+          {
+            startMinutes: 660,
+            endMinutes: 720,
+          },
+        ],
+      });
+
+    expect(startTimes).not.toContain("10:00");
+    expect(startTimes).not.toContain("12:00");
+    expect(startTimes).toContain("12:15");
+  });
+
+  it("returns no times outside the 90-day booking window", () => {
+    const startTimes =
+      calculateAvailableStartTimes({
+        selectedDate: "2026-12-04",
+        bookingDurationMinutes: 60,
+        currentInstant: new Date(
+          "2026-09-04T14:00:00Z",
+        ),
+        manualOpenings: [],
+        unavailableIntervals: [],
+      });
+
+    expect(startTimes).toEqual([]);
   });
 });

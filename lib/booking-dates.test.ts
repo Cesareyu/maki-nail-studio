@@ -4,6 +4,7 @@ import { bookingRules } from "@/data/booking-rules";
 
 import {
   getLocalDateTimeParts,
+  getWeekdayFromIsoDate,
   isDateWithinBookingWindow,
 } from "@/lib/booking-dates";
 
@@ -131,4 +132,20 @@ describe("getLocalDateTimeParts", () => {
       ),
     ).toThrow("Invalid date instant");
   });
+});
+
+describe("getWeekdayFromIsoDate", () => {
+  it.each([
+    ["2026-09-07", "monday"],
+    ["2026-09-08", "tuesday"],
+    ["2026-09-12", "saturday"],
+    ["2026-09-13", "sunday"],
+  ] as const)(
+    "returns %s as %s",
+    (isoDate, expectedWeekday) => {
+      expect(
+        getWeekdayFromIsoDate(isoDate),
+      ).toBe(expectedWeekday);
+    },
+  );
 });
