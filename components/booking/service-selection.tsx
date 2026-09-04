@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 
-import { calculateGuestBookingSummary } from "@/lib/booking-summary";
+import type { Dispatch, SetStateAction } from "react";
 
 import type { BookingGuestDraft } from "@/types/booking";
+
+import { calculateGuestBookingSummary } from "@/lib/booking-summary";
 
 import type {
   Service,
@@ -14,6 +16,8 @@ import type {
 type ServiceSelectionProps = {
   services: Service[];
   bundles: ServiceBundle[];
+  guests: BookingGuestDraft[];
+  setGuests: Dispatch<SetStateAction<BookingGuestDraft[]>>;
 };
 
 function getServiceSelectionGroup(
@@ -29,18 +33,9 @@ function getServiceSelectionGroup(
 export function ServiceSelection({
   services,
   bundles,
+  guests,
+  setGuests,
 }: ServiceSelectionProps) {
-  const [guests, setGuests] = useState<
-    BookingGuestDraft[]
-  >([
-    {
-      id: "guest-1",
-      name: "",
-      phone: "",
-      selectedServiceIds: [],
-      technicianId: null,
-    },
-  ]);
 
   const [activeGuestId, setActiveGuestId] =
     useState("guest-1");

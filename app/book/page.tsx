@@ -1,4 +1,4 @@
-import { ServiceSelection } from "@/components/booking/service-selection";
+import { BookingFlow } from "@/components/booking/booking-flow";
 import {
   serviceBundles,
   services,
@@ -49,7 +49,7 @@ export default function BookPage() {
           </span>
         </div>
 
-        <ServiceSelection
+        <BookingFlow
           services={activeServices}
           bundles={activeBundles}
         />
