@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
+import { calculateGuestBookingSummary } from "@/lib/booking-summary";
+
 import type {
   Service,
   ServiceBundle,
 } from "@/data/services";
-import { findMatchingBundle } from "@/lib/pricing";
 
 type ServiceSelectionProps = {
   services: Service[];
@@ -62,85 +63,51 @@ export function ServiceSelection({
   const selectedServiceIds =
     activeGuest?.selectedServiceIds ?? [];
 
-  const activeGuestServices = services.filter(
-    (service) =>
-      selectedServiceIds.includes(service.id),
-  );
-
-  const activeGuestSubtotalCents =
-    activeGuestServices.reduce(
-      (total, service) =>
-        total + service.priceCents,
-      0,
-    );
-
-  const activeGuestDurationMinutes =
-    activeGuestServices.reduce(
-      (total, service) =>
-        total + service.durationMinutes,
-      0,
-    );
-
-  const activeGuestBundle = findMatchingBundle(
+const activeGuestSummary =
+  calculateGuestBookingSummary(
     selectedServiceIds,
+    services,
     bundles,
   );
 
-  const activeGuestFinalPriceCents =
-    activeGuestBundle?.priceCents ??
-    activeGuestSubtotalCents;
+const activeGuestServices =
+  activeGuestSummary.selectedServices;
 
-  const activeGuestFinalDurationMinutes =
-    activeGuestBundle?.durationMinutes ??
-    activeGuestDurationMinutes;
+const activeGuestBundle =
+  activeGuestSummary.matchingBundle;
 
-  const activeGuestSavingsCents =
-    activeGuestSubtotalCents -
-    activeGuestFinalPriceCents;
+const activeGuestFinalPriceCents =
+  activeGuestSummary.finalPriceCents;
+
+const activeGuestFinalDurationMinutes =
+  activeGuestSummary.finalDurationMinutes;
+
+const activeGuestSavingsCents =
+  activeGuestSummary.savingsCents;
   
-  const guestBookingSummaries = guests
-    .map((guest, index) => {
-      const guestServices = services.filter(
-        (service) =>
-          guest.selectedServiceIds.includes(
-            service.id,
-          ),
-      );
-
-      const guestSubtotalCents =
-        guestServices.reduce(
-          (total, service) =>
-            total + service.priceCents,
-          0,
-        );
-
-      const guestDurationMinutes =
-        guestServices.reduce(
-          (total, service) =>
-            total + service.durationMinutes,
-          0,
-        );
-
-      const guestBundle = findMatchingBundle(
+const guestBookingSummaries = guests
+  .map((guest, index) => {
+    const summary =
+      calculateGuestBookingSummary(
         guest.selectedServiceIds,
+        services,
         bundles,
       );
 
-      return {
-        guestId: guest.id,
-        guestNumber:index + 1,
-        serviceCount: guestServices.length,
-        finalPriceCents:
-          guestBundle?.priceCents ??
-          guestSubtotalCents,
-        finalDurationMinutes:
-          guestBundle?.durationMinutes ??
-          guestDurationMinutes,
-      };
-    })
-    .filter(
-      (summary) => summary.serviceCount > 0,
-    );
+    return {
+      guestId: guest.id,
+      guestNumber: index + 1,
+      serviceCount:
+        summary.selectedServices.length,
+      finalPriceCents:
+        summary.finalPriceCents,
+      finalDurationMinutes:
+        summary.finalDurationMinutes,
+    };
+  })
+  .filter(
+    (summary) => summary.serviceCount > 0,
+  );
 
   const bookingTotalPriceCents = 
   guestBookingSummaries.reduce(
