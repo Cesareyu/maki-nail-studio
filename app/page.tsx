@@ -21,12 +21,12 @@ export default function Home() {
         </p>
 
         <Link
-          href="/services"
+          href="/book"
           className="mt-10 rounded-full bg-[#2d2523] px-8 py-4 text-sm font-medium text-white"
         >
           Book an Appointment
         </Link>
-        
+
       </section>
       <section className="px-6 py-28">
           <div className="mx-auto max-w-6x1">

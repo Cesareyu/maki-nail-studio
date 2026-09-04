@@ -1,5 +1,4 @@
 import { ServiceAddonCard } from "@/components/service-addon-card";
-import Link from "next/link";
 import { ServiceBundleCard } from "@/components/service-bundle-card";
 import { ServiceCard } from "@/components/service-card";
 import {
@@ -12,12 +11,6 @@ export default function ServicesPage() {
   return (
     <main className="min-h-screen bg-[#fffaf8] px-6 py-12 text-[#2d2523]">
       <div className="mx-auto max-w-6xl">
-        <Link
-          href="/"
-          className="text-sm font-medium text-[#8b574d] hover:underline"
-        >
-          ← Back to home
-        </Link>
 
         <header className="mx-auto max-w-3xl py-16 text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-[#9d6f65]">

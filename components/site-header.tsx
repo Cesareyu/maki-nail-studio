@@ -39,7 +39,7 @@ export function SiteHeader() {
         </nav>
 
         <Link
-          href="/services"
+          href="/book"
           className="rounded-full bg-[#2d2523] px-5 py-3 text-sm font-medium text-white"
         >
           Book Now
