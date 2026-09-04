@@ -2,10 +2,16 @@ import {
   bookingRules,
   weeklyBookingHours,
 } from "@/data/booking-rules";
+
 import type {
   BookingStartWindow,
   Weekday,
 } from "@/data/booking-rules";
+
+import {
+  getLocalDateTimeParts,
+  isoDateToDayNumber,
+} from "@/lib/booking-dates";
 
 export function timeStringToMinutes(
   time: string,
@@ -215,5 +221,55 @@ export function getStartTimesWithManualOpenings(
     (first, second) =>
       timeStringToMinutes(first) -
       timeStringToMinutes(second),
+  );
+}
+
+export function filterStartTimesByLeadTime(
+  selectedDate: string,
+  candidateStartTimes: string[],
+  currentInstant: Date,
+  timeZone: string,
+  minimumLeadTimeMinutes: number,
+): string[] {
+  if (
+    !Number.isInteger(minimumLeadTimeMinutes) ||
+    minimumLeadTimeMinutes < 0
+  ) {
+    throw new Error(
+      "Minimum lead time must be a non-negative integer",
+    );
+  }
+
+  const localNow = getLocalDateTimeParts(
+    currentInstant,
+    timeZone,
+  );
+
+  const currentLocalMinuteNumber =
+    isoDateToDayNumber(localNow.date) *
+      24 *
+      60 +
+    timeStringToMinutes(localNow.time);
+
+  const selectedDayMinuteNumber =
+    isoDateToDayNumber(selectedDate) *
+    24 *
+    60;
+
+  return candidateStartTimes.filter(
+    (startTime) => {
+      const appointmentMinuteNumber =
+        selectedDayMinuteNumber +
+        timeStringToMinutes(startTime);
+
+      const minutesUntilAppointment =
+        appointmentMinuteNumber -
+        currentLocalMinuteNumber;
+
+      return (
+        minutesUntilAppointment >=
+        minimumLeadTimeMinutes
+      );
+    },
   );
 }

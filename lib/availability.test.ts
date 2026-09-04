@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   doTimeIntervalsOverlap,
   filterAvailableStartTimes,
+  filterStartTimesByLeadTime,
   generateCandidateStartTimes,
   getDefaultStartTimesForWeekday,
   getStartTimesWithManualOpenings,
@@ -352,5 +353,76 @@ describe("getStartTimesWithManualOpenings", () => {
       "14:15",
       "14:30",
     ]);
+  });
+});
+
+describe("filterStartTimesByLeadTime", () => {
+  it("removes same-day slots less than two hours away", () => {
+    const availableStartTimes =
+      filterStartTimesByLeadTime(
+        "2026-09-04",
+        [
+          "11:45",
+          "12:00",
+          "12:15",
+        ],
+        new Date("2026-09-04T14:00:00Z"),
+        "America/Toronto",
+        120,
+      );
+
+    expect(availableStartTimes).toEqual([
+      "12:00",
+      "12:15",
+    ]);
+  });
+
+  it("calculates lead time across midnight", () => {
+    const availableStartTimes =
+      filterStartTimesByLeadTime(
+        "2026-01-16",
+        [
+          "00:45",
+          "01:00",
+          "01:15",
+        ],
+        new Date("2026-01-16T04:00:00Z"),
+        "America/Toronto",
+        120,
+      );
+
+    expect(availableStartTimes).toEqual([
+      "01:00",
+      "01:15",
+    ]);
+  });
+
+  it("uses the Toronto date instead of the UTC date", () => {
+    const availableStartTimes =
+      filterStartTimesByLeadTime(
+        "2026-01-01",
+        ["00:00"],
+        new Date("2026-01-01T02:30:00Z"),
+        "America/Toronto",
+        120,
+      );
+
+    expect(availableStartTimes).toEqual([
+      "00:00",
+    ]);
+  });
+
+  it("rejects a negative lead time", () => {
+    expect(() =>
+      filterStartTimesByLeadTime(
+        "2026-09-04",
+        ["12:00"],
+        new Date("2026-09-04T14:00:00Z"),
+        "America/Toronto",
+        -1,
+      ),
+    ).toThrow(
+      "Minimum lead time must be a non-negative integer",
+    );
   });
 });

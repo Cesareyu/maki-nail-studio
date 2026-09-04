@@ -1,7 +1,7 @@
 const MILLISECONDS_PER_DAY =
   24 * 60 * 60 * 1000;
 
-function isoDateToDayNumber(
+export function isoDateToDayNumber(
   isoDate: string,
 ): number {
   const datePattern =
@@ -71,3 +71,62 @@ export function isDateWithinBookingWindow(
     daysFromToday <= maximumAdvanceDays
   );
 }
+
+export type LocalDateTimeParts = {
+  date: string;
+  time: string;
+};
+
+export function getLocalDateTimeParts(
+  instant: Date,
+  timeZone: string,
+): LocalDateTimeParts {
+  if (Number.isNaN(instant.getTime())) {
+    throw new Error("Invalid date instant");
+  }
+
+  const formatter = new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    },
+  );
+
+  const parts = formatter.formatToParts(
+    instant,
+  );
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)
+      ?.value;
+
+  const year = getPart("year");
+  const month = getPart("month");
+  const day = getPart("day");
+  const hour = getPart("hour");
+  const minute = getPart("minute");
+
+  if (
+    !year ||
+    !month ||
+    !day ||
+    !hour ||
+    !minute
+  ) {
+    throw new Error(
+      "Unable to format local date and time",
+    );
+  }
+
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hour}:${minute}`,
+  };
+}
+

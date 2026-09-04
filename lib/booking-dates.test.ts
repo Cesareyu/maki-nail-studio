@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isDateWithinBookingWindow } from "@/lib/booking-dates";
+import { bookingRules } from "@/data/booking-rules";
+
+import {
+  getLocalDateTimeParts,
+  isDateWithinBookingWindow,
+} from "@/lib/booking-dates";
 
 describe("isDateWithinBookingWindow", () => {
   const todayDate = "2026-09-04";
@@ -78,5 +83,52 @@ describe("isDateWithinBookingWindow", () => {
     ).toThrow(
       "Maximum advance days must be a non-negative integer",
     );
+  });
+});
+
+describe("getLocalDateTimeParts", () => {
+  it("converts a winter UTC instant to Toronto standard time", () => {
+    const result = getLocalDateTimeParts(
+      new Date("2026-01-15T15:30:00Z"),
+      bookingRules.timeZone,
+    );
+
+    expect(result).toEqual({
+      date: "2026-01-15",
+      time: "10:30",
+    });
+  });
+
+  it("converts a summer UTC instant to Toronto daylight time", () => {
+    const result = getLocalDateTimeParts(
+      new Date("2026-07-15T14:30:00Z"),
+      bookingRules.timeZone,
+    );
+
+    expect(result).toEqual({
+      date: "2026-07-15",
+      time: "10:30",
+    });
+  });
+
+  it("handles a Toronto date that is earlier than the UTC date", () => {
+    const result = getLocalDateTimeParts(
+      new Date("2026-01-01T02:30:00Z"),
+      bookingRules.timeZone,
+    );
+
+    expect(result).toEqual({
+      date: "2025-12-31",
+      time: "21:30",
+    });
+  });
+
+  it("rejects an invalid instant", () => {
+    expect(() =>
+      getLocalDateTimeParts(
+        new Date("invalid"),
+        bookingRules.timeZone,
+      ),
+    ).toThrow("Invalid date instant");
   });
 });
