@@ -99,3 +99,90 @@ export function getDefaultStartTimesForWeekday(
     bookingRules.slotIntervalMinutes,
   );
 }
+
+export type TimeInterval = {
+  startMinutes: number;
+  endMinutes: number;
+};
+
+export function doTimeIntervalsOverlap(
+  first: TimeInterval,
+  second: TimeInterval,
+): boolean {
+  if (
+    first.startMinutes >= first.endMinutes ||
+    second.startMinutes >= second.endMinutes
+  ) {
+    throw new Error(
+      "Time interval start must be before end",
+    );
+  }
+
+  return (
+    first.startMinutes < second.endMinutes &&
+    second.startMinutes < first.endMinutes
+  );
+}
+
+export function filterAvailableStartTimes(
+  candidateStartTimes: string[],
+  bookingDurationMinutes: number,
+  unavailableIntervals: TimeInterval[],
+  bufferMinutes: number,
+): string[] {
+  if (
+    !Number.isInteger(bookingDurationMinutes) ||
+    bookingDurationMinutes <= 0
+  ) {
+    throw new Error(
+      "Booking duration must be a positive integer",
+    );
+  }
+
+  if (
+    !Number.isInteger(bufferMinutes) ||
+    bufferMinutes < 0
+  ) {
+    throw new Error(
+      "Buffer must be a non-negative integer",
+    );
+  }
+
+  return candidateStartTimes.filter(
+    (candidateStartTime) => {
+      const candidateStartMinutes =
+        timeStringToMinutes(
+          candidateStartTime,
+        );
+
+      const candidateInterval: TimeInterval = {
+        startMinutes: candidateStartMinutes,
+        endMinutes:
+          candidateStartMinutes +
+          bookingDurationMinutes +
+          bufferMinutes,
+      };
+
+      const conflictsWithUnavailableTime =
+        unavailableIntervals.some(
+          (unavailableInterval) => {
+            const unavailableIntervalWithBuffer: TimeInterval =
+              {
+                startMinutes:
+                  unavailableInterval.startMinutes,
+                endMinutes:
+                  unavailableInterval.endMinutes +
+                  bufferMinutes,
+              };
+
+            return doTimeIntervalsOverlap(
+              candidateInterval,
+              unavailableIntervalWithBuffer,
+            );
+          },
+        );
+
+      return !conflictsWithUnavailableTime;
+    },
+  );
+}
