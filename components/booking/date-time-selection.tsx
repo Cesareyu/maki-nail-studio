@@ -6,9 +6,11 @@ type DateTimeSelectionProps = {
   minimumDate: string;
   maximumDate: string;
   availableStartTimes: string[];
+  canContinue: boolean;
   onDateChange: (date: string) => void;
   onTimeChange: (time: string) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
 export function DateTimeSelection({
@@ -17,9 +19,11 @@ export function DateTimeSelection({
   minimumDate,
   maximumDate,
   availableStartTimes,
+  canContinue,
   onDateChange,
   onTimeChange,
   onBack,
+  onContinue,
 }: DateTimeSelectionProps) {
 
   return (
@@ -80,13 +84,24 @@ export function DateTimeSelection({
   </div>
 )}
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="mt-8 rounded-full border border-[#2d2523] px-6 py-3 font-semibold text-[#2d2523]"
-      >
-        Back to services
-      </button>
+      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+  <button
+    type="button"
+    onClick={onBack}
+    className="rounded-full border border-[#2d2523] px-6 py-3 font-semibold text-[#2d2523]"
+  >
+    Back to services
+  </button>
+
+  <button
+    type="button"
+    disabled={!canContinue}
+    onClick={onContinue}
+    className="rounded-full bg-[#2d2523] px-6 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    Continue to details
+  </button>
+</div>
     </section>
   );
 }

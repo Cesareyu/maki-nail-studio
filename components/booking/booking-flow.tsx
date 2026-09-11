@@ -3,6 +3,7 @@
 import { BookingStepHeader } from "@/components/booking/booking-step-header";
 import { calculateAvailableStartTimes } from "@/lib/availability";
 import { calculateGuestBookingSummary } from "@/lib/booking-summary";
+import { CustomerDetailsForm } from "@/components/booking/customer-details-form";
 import { useState } from "react";
 import { DateTimeSelection } from "@/components/booking/date-time-selection";
 import { ServiceSelection } from "@/components/booking/service-selection";
@@ -35,13 +36,16 @@ export function BookingFlow({
   ]);
 
   const [activeStep, setActiveStep] = useState<
-    "services" | "date-time"
+    "services" | "date-time" | "details"
     >("services");
   const [selectedDate, setSelectedDate] = useState<string | null>(
     null,
     );
     const [selectedStartTime, setSelectedStartTime] =
     useState<string | null>(null);
+
+    const [email, setEmail] = useState("");
+    const [notes, setNotes] = useState("");
 
   const canContinue = guests.every(
     (guest) => guest.selectedServiceIds.length > 0,
@@ -82,6 +86,37 @@ export function BookingFlow({
   setSelectedStartTime(null);
 }
 
+if (activeStep === "details") {
+  return (
+    <>
+      <BookingStepHeader
+        currentStep={3}
+        title="Your details"
+        description="Enter the contact information for your booking."
+      />
+
+      <CustomerDetailsForm
+        guests={guests}
+        setGuests={setGuests}
+        email={email}
+        notes={notes}
+        onEmailChange={setEmail}
+        onNotesChange={setNotes}
+        onBack={() => setActiveStep("date-time")}
+      />
+
+        <button
+          type="button"
+          onClick={() => setActiveStep("date-time")}
+          className="mt-8 rounded-full border border-[#2d2523] px-6 py-3 font-semibold text-[#2d2523]"
+        >
+          Back to date &amp; time
+        </button>
+      </section>
+    </>
+  );
+}
+
 if (activeStep === "date-time") {
   return (
     <>
@@ -97,9 +132,14 @@ if (activeStep === "date-time") {
         minimumDate={todayInBookingTimeZone}
         maximumDate={latestBookingDate}
         availableStartTimes={availableStartTimes}
+        canContinue={
+          selectedDate !== null &&
+          selectedStartTime !== null
+        }
         onDateChange={handleDateChange}
         onTimeChange={setSelectedStartTime}
         onBack={() => setActiveStep("services")}
+        onContinue={() => setActiveStep("details")}
       />
     </>
   );
@@ -130,6 +170,6 @@ return (
         Continue to date &amp; time
       </button>
     </div>
-  </>
-);
+    </>
+  );
 }
