@@ -1,5 +1,6 @@
 "use client";
 
+import { BookingStepHeader } from "@/components/booking/booking-step-header";
 import { calculateAvailableStartTimes } from "@/lib/availability";
 import { calculateGuestBookingSummary } from "@/lib/booking-summary";
 import { useState } from "react";
@@ -83,20 +84,35 @@ export function BookingFlow({
 
 if (activeStep === "date-time") {
   return (
-    <DateTimeSelection
-    selectedDate={selectedDate}
-    selectedStartTime={selectedStartTime}
-    minimumDate={todayInBookingTimeZone}
-    maximumDate={latestBookingDate}
-    availableStartTimes={availableStartTimes}
-    onDateChange={handleDateChange}
-    onTimeChange={setSelectedStartTime}
-    onBack={() => setActiveStep("services")}
-    />
+    <>
+      <BookingStepHeader
+        currentStep={2}
+        title="Choose a date and time"
+        description="Select an available appointment time for your group."
+      />
+
+      <DateTimeSelection
+        selectedDate={selectedDate}
+        selectedStartTime={selectedStartTime}
+        minimumDate={todayInBookingTimeZone}
+        maximumDate={latestBookingDate}
+        availableStartTimes={availableStartTimes}
+        onDateChange={handleDateChange}
+        onTimeChange={setSelectedStartTime}
+        onBack={() => setActiveStep("services")}
+      />
+    </>
   );
 }
+
 return (
   <>
+    <BookingStepHeader
+      currentStep={1}
+      title="Choose your services"
+      description="Select services for each guest. Eligible combination pricing will be applied automatically."
+    />
+
     <ServiceSelection
       services={services}
       bundles={bundles}

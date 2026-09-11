@@ -23,18 +23,7 @@ export function DateTimeSelection({
 }: DateTimeSelectionProps) {
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <p className="text-sm uppercase tracking-[0.2em] text-[#8b574d]">
-        Book an appointment
-      </p>
-
-      <h1 className="mt-3 text-4xl font-semibold text-[#2d2523]">
-        Choose a date and time
-      </h1>
-
-      <p className="mt-3 text-[#6f6561]">
-        Select your preferred appointment date.
-      </p>
+    <section className="pb-16">
 
       <div className="mt-10 rounded-3xl border border-[#eadfdc] bg-white p-6">
         <label
