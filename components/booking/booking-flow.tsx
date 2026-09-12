@@ -105,14 +105,6 @@ if (activeStep === "details") {
         onBack={() => setActiveStep("date-time")}
       />
 
-        <button
-          type="button"
-          onClick={() => setActiveStep("date-time")}
-          className="mt-8 rounded-full border border-[#2d2523] px-6 py-3 font-semibold text-[#2d2523]"
-        >
-          Back to date &amp; time
-        </button>
-      </section>
     </>
   );
 }
